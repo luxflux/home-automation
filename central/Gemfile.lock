@@ -4,6 +4,13 @@ GEM
     amq-protocol (1.9.2)
     bunny (1.7.0)
       amq-protocol (>= 1.9.2)
+    cause (0.1)
+    foreman (0.78.0)
+      thor (~> 0.19.1)
+    influxdb (0.2.1)
+      cause
+      json
+    json (1.8.3)
     serverengine (1.5.10)
       sigdump (~> 0.2.2)
     sigdump (0.2.3)
@@ -19,4 +26,6 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  foreman
+  influxdb
   sneakers
