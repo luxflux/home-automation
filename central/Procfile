@@ -1,2 +1,2 @@
-state: sneakers work StateProcessor --require consumer.rb
-statistics: sneakers work StatisticsProcessor --require consumer.rb
+state: sneakers work StateProcessor --require bin/consumer.rb
+statistics: sneakers work StatisticsProcessor --require bin/consumer.rb

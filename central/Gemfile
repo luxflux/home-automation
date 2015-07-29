@@ -1,7 +1,23 @@
 source 'https://rubygems.org'
 
+gem 'bundler'
+gem 'rake'
+
 gem 'sneakers'
 gem 'influxdb'
 gem 'redis'
 
+gem 'lotusrb'
+gem 'lotus-model'
+
 gem 'foreman'
+
+group :test do
+  gem 'rspec'
+  gem 'capybara'
+end
+
+group :production do
+  # gem 'puma'
+end
+

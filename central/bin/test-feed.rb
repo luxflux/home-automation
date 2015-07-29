@@ -18,5 +18,4 @@ loop do
   end
 
   sleep 1
-  exit 0
 end

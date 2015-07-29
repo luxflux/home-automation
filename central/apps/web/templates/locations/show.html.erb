@@ -1,0 +1,58 @@
+<h1>Location <%= location %></h1>
+<table>
+  <tr>
+    <th>Name</th>
+    <th>Current Value</th>
+  </tr>
+  <% states.each do |state| %>
+    <tr>
+      <td><%= state[:name] %></td>
+      <td><%= state[:current] %></td>
+    </tr>
+    <tr>
+      <td colspan="2">
+        <svg id="chart-<%= state[:name] %>" style="height: 400px; width: 800px"></svg>
+        <script>
+nv.addGraph(function() {
+  var chart = nv.models.lineChart()
+                .margin({left: 100})  //Adjust chart margins to give the x-axis some breathing room.
+                .useInteractiveGuideline(true)  //We want nice looking tooltips and a guideline!
+                //.transitionDuration(350)  //how fast do you want the lines to transition?
+                .showLegend(true)       //Show the legend, allowing users to turn on/off line series.
+                .showYAxis(true)        //Show the y-axis
+                .showXAxis(true)        //Show the x-axis
+  ;
+
+  //chart.xAxis.tickFormat(function(d) { d3.time.format('%H:%M:%S')(new Date(d)) });
+  //chart.yAxis.tickFormat(function(v) { d3.format(',g2') });
+
+  var data = [
+  {
+    key: "<%= state[:name] %>",
+    values: <%= JSON.dump(state[:data]) %>
+  }
+  ];
+  data.forEach(function(series) {
+    series.values = series.values.filter(
+        function(d) {
+          return (d.y !== null);
+        }
+    );
+    series.values.forEach(function(value) {
+      value.x = new Date(Date.parse(value.x));
+    });
+  });
+  console.log(data);
+
+
+  d3.select('#chart-<%= state[:name] %>')
+    .datum(data)
+    .call(chart);
+
+  nv.utils.windowResize(function() { chart.update() });
+});
+        </script>
+      </td>
+    </tr>
+  <% end %>
+</ul>
