@@ -1,55 +1,34 @@
 require 'sneakers'
 require 'json'
 require 'influxdb'
+require 'redis'
 
 Sneakers.configure workers: 1, threads: 1, log: 'log/sneakers.log'
 Sneakers.logger.level = Logger::INFO
 
-class TemperatureProcessor
+class StateProcessor
   include Sneakers::Worker
 
-  from_queue '#.temperature',
-             exchange: 'measurements',
+  from_queue 'state',
+             routing_key: 'measurements.#',
+             exchange: 'homeauto',
              exchange_type: :topic,
              durable: true
 
   def work(message)
     message = JSON.parse(message)
-    Sneakers.logger.debug "Temperature: #{message}"
-    StatisticsProcessor.enqueue JSON.dump(message)
+    Sneakers.logger.info "State update: #{message}"
+    location = message['location']
+    kind = message['kind']
+    value = message['value']
+    StateProcessor.redis.sadd 'locations', location
+    StateProcessor.redis.sadd "locations:#{location}:measurements", kind
+    StateProcessor.redis.set "state:#{location}:#{kind}", value
     ack!
   end
-end
 
-class HumidityProcessor
-  include Sneakers::Worker
-
-  from_queue '#.humidity',
-             exchange: 'measurements',
-             exchange_type: :topic,
-             durable: true
-
-  def work(message)
-    message = JSON.parse(message)
-    Sneakers.logger.debug "Humidity: #{message}"
-    StatisticsProcessor.enqueue JSON.dump(message)
-    ack!
-  end
-end
-
-class MovementProcessor
-  include Sneakers::Worker
-
-  from_queue '#.movement',
-             exchange: 'measurements',
-             exchange_type: :topic,
-             durable: true
-
-  def work(message)
-    message = JSON.parse(message)
-    Sneakers.logger.debug "Movement: #{message}"
-    StatisticsProcessor.enqueue JSON.dump(message)
-    ack!
+  def self.redis
+    @redis ||= Redis.new
   end
 end
 
@@ -57,11 +36,14 @@ class StatisticsProcessor
   include Sneakers::Worker
 
   from_queue 'statistics',
-             idurable: true
+             routing_key: 'measurements.#',
+             exchange: 'homeauto',
+             exchange_type: :topic,
+             durable: true
 
   def work(message)
     message = JSON.parse(message)
-    Sneakers.logger.debug "Statistics: #{message}"
+    Sneakers.logger.info "Statistics: #{message}"
     data = {
       values: { value: message['value'] },
       tags: { location: message['location'] },

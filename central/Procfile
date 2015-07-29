@@ -1,4 +1,2 @@
-humidity: sneakers work HumidityProcessor --require consumer.rb
-movement: sneakers work MovementProcessor --require consumer.rb
-temperature: sneakers work TemperatureProcessor --require consumer.rb
+state: sneakers work StateProcessor --require consumer.rb
 statistics: sneakers work StatisticsProcessor --require consumer.rb

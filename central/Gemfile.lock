@@ -11,6 +11,7 @@ GEM
       cause
       json
     json (1.8.3)
+    redis (3.2.1)
     serverengine (1.5.10)
       sigdump (~> 0.2.2)
     sigdump (0.2.3)
@@ -28,4 +29,5 @@ PLATFORMS
 DEPENDENCIES
   foreman
   influxdb
+  redis
   sneakers
