@@ -13,7 +13,7 @@ module Web::Controllers::Locations
       measurements = redis.smembers "locations:#{@location}:measurements"
       @states = measurements.map do |measurement|
         data = influxdb.query "SELECT mean(value) FROM #{measurement} WHERE time > now() - 1h GROUP BY time(1m)"
-        data.map! { |result| result['values'].map { |value| { y: value['mean'], x: value['time'] } } }
+        data.map! { |result| result['values'] }
         data.flatten!
         { name: measurement, current: redis.get("state:#{@location}:#{measurement}"), data: data }
       end
