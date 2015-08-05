@@ -1,7 +1,9 @@
 require 'rubygems'
 require 'bundler/setup'
 require 'lotus/setup'
-require_relative '../lib/central'
+
+$: << File.expand_path('../../lib', __FILE__)
+require 'central'
 require_relative '../apps/web/application'
 
 Lotus::Container.configure do

@@ -1,5 +1,5 @@
 require 'lotus/model'
-Dir["#{ __dir__ }/central/**/*.rb"].each { |file| require_relative file }
+Dir["#{__dir__}/central/**/*.rb"].each { |file| require_relative file }
 
 Lotus::Model.configure do
   ##
@@ -15,7 +15,7 @@ Lotus::Model.configure do
   #    adapter type: :sql, uri: 'postgres://localhost/central_development'
   #    adapter type: :sql, uri: 'mysql://localhost/central_development'
   #
-  adapter type: :file_system, uri: ENV['CENTRAL_DATABASE_URL']
+  adapter type: :redis, uri: ENV['CENTRAL_REDIS_URL']
 
   ##
   # Database mapping
@@ -29,12 +29,12 @@ Lotus::Model.configure do
   # Alternatively, you can use a block syntax like the following:
   #
   mapping do
-    # collection :users do
-    #   entity     User
-    #   repository UserRepository
-    #
-    #   attribute :id,   Integer
-    #   attribute :name, String
-    # end
+    collection :locations do
+      entity Location
+      repository LocationRepository
+
+      attribute :id, Integer
+      attribute :name, String
+    end
   end
 end.load!

@@ -7,7 +7,8 @@ module Web::Controllers::Locations
     expose :locations
 
     def call(params)
-      @locations = Redis.new.smembers 'locations'
+      # LocationRepository.create(Location.new(name: 'test'))
+      @locations = LocationRepository.all
     end
   end
 end
