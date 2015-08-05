@@ -1,3 +1,11 @@
+GIT
+  remote: git://github.com/lotus/assets.git
+  revision: 55707eeef03fb56b057cbb64f402b8e52a837785
+  specs:
+    lotus-assets (0.1.0)
+      lotus-utils (~> 0.5)
+      tilt (~> 2.0, >= 2.0.1)
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -98,9 +106,13 @@ DEPENDENCIES
   capybara
   foreman
   influxdb
+  lotus-assets!
   lotus-model
   lotusrb
   rake
   redis
   rspec
   sneakers
+
+BUNDLED WITH
+   1.10.6

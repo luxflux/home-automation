@@ -9,6 +9,7 @@ gem 'redis'
 
 gem 'lotusrb'
 gem 'lotus-model'
+gem 'lotus-assets', github: 'lotus/assets'
 
 gem 'foreman'
 

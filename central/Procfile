@@ -1,2 +1,4 @@
 state: sneakers work StateProcessor --require bin/consumer.rb
 statistics: sneakers work StatisticsProcessor --require bin/consumer.rb
+web: bundle exec lotus server
+logs: tail -n0 -f log/*.log

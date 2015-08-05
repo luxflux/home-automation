@@ -18,7 +18,6 @@ module Web
       load_paths << [
         'controllers',
         'views',
-        'config/initializers',
       ]
 
       # Handle exceptions with HTTP statuses (true) or don't catch them (false).
