@@ -34,7 +34,7 @@ module Lotus
           #
           # @since 0.1.0
           def all
-            result = symbolize_keys_in_set(@dataset.all)
+            result = typecast_set(symbolize_keys_in_set(@dataset.all))
 
             if conditions.any?
               prev_result = nil
@@ -68,6 +68,10 @@ module Lotus
 
           def symbolize_keys(record)
             record.each_with_object({}) { |(k, v), h| h[k.to_sym] = v }
+          end
+
+          def typecast_set(records)
+            @collection.deserialize(records).map { |record| @collection.serialize(record) }
           end
         end
       end

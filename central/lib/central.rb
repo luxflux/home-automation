@@ -36,5 +36,18 @@ Lotus::Model.configure do
       attribute :id, Integer
       attribute :name, String
     end
+
+    collection :measurements do
+      entity Measurement
+      repository MeasurementRepository
+
+      attribute :id, Integer
+      attribute :kind, String
+      attribute :current, Float
+      attribute :location_id, Integer
+    end
   end
 end.load!
+
+Sneakers.configure workers: 1, threads: 1, log: 'log/sneakers.log'
+Sneakers.logger.level = Logger::INFO

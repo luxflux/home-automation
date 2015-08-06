@@ -6,17 +6,17 @@ module Web::Controllers::Locations
     include Web::Action
 
     expose :location
-    expose :states
+    expose :measurements
 
     def call(params)
       @location = LocationRepository.find(params[:id])
-      measurements = redis.smembers "locations:#{@location.id}:measurements"
-      @states = measurements.map do |measurement|
-        data = influxdb.query "SELECT mean(value) FROM #{measurement} WHERE time > now() - 1h GROUP BY time(1m)"
-        data.map! { |result| result['values'] }
-        data.flatten!
-        { name: measurement, current: redis.get("state:#{@location}:#{measurement}"), data: data }
-      end
+      @measurements = MeasurementRepository.all(@location.id)
+      # @states = measurements.map do |measurement|
+      #   # data = influxdb.query "SELECT mean(value) FROM #{measurement} WHERE time > now() - 1h GROUP BY time(1m)"
+      #   # data.map! { |result| result['values'] }
+      #   # data.flatten!
+      #   { name: measurement, current: measurement.current, data: data }
+      # end
     end
 
     def redis

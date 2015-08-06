@@ -23,7 +23,7 @@ module Lotus
           # @since 0.1.0
           def all
             ids = @connection.smembers name
-            ids.map { |id| @connection.hgetall "#{name}:#{id}" }
+            ids.map { |id| @connection.hgetall("#{name}:#{id}") }
           end
 
           # Creates a record for the given entity and assigns an id.
@@ -43,11 +43,36 @@ module Lotus
             @connection.mapped_hmset identifier, entity
             @connection.sadd name, id
 
-            entity
+            id
+          end
+
+          # Updates the record corresponding to the given entity.
+          #
+          # @param entity [Object] the entity to persist
+          #
+          # @see Lotus::Model::Adapters::Redis::Command#update
+          #
+          # @api private
+          # @since 0.1.0
+          def update(entity)
+            identifier = "#{name}:#{entity[_identity]}"
+            @connection.mapped_hmset identifier, entity
           end
 
           def find(id)
             @connection.hgetall("#{name}:#{id}")
+          end
+
+          private
+
+          # Name of the identity column in database
+          #
+          # @return [Symbol] the identity name
+          #
+          # @api private
+          # @since 0.2.2
+          def _identity
+            @mapped_collection.identity
           end
         end
       end

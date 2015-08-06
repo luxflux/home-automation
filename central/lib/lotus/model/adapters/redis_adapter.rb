@@ -53,6 +53,20 @@ module Lotus
           command(collection).create(entity)
         end
 
+
+        # Updates a record in the database corresponding to the given entity.
+        #
+        # @param collection [Symbol] the target collection (it must be mapped).
+        # @param entity [#id] the entity to update
+        #
+        # @return [Object] the entity
+        #
+        # @api private
+        # @since 0.1.0
+        def update(collection, entity)
+          command(collection).update(entity)
+        end
+
         # Fabricates a query
         #
         # @param collection [Symbol] the target collection (it must be mapped).

@@ -7,7 +7,6 @@ module Web::Controllers::Locations
     expose :locations
 
     def call(params)
-      # LocationRepository.create(Location.new(name: %w(test asd jjs 44s).sample))
       @locations = LocationRepository.all
     end
   end
