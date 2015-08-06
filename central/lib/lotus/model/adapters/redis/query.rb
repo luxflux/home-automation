@@ -1,8 +1,15 @@
+require 'lotus/model/adapters/memory/query'
+
 module Lotus
   module Model
     module Adapters
       module Redis
-        class Query
+        class Query < Lotus::Model::Adapters::Memory::Query
+          include Enumerable
+          extend  Forwardable
+
+          def_delegators :all, :each, :to_s, :empty?
+
           # Initialize a query
           #
           # @param dataset [Lotus::Model::Adapters::Redis::Collection]
@@ -15,6 +22,8 @@ module Lotus
           def initialize(dataset, collection, &blk)
             @dataset = dataset
             @collection = collection
+            @conditions = []
+            @modifiers = []
             instance_eval(&blk) if block_given?
           end
 
@@ -25,22 +34,40 @@ module Lotus
           #
           # @since 0.1.0
           def all
-            @collection.deserialize(run)
+            result = symbolize_keys_in_set(@dataset.all)
+
+            if conditions.any?
+              prev_result = nil
+              conditions.each do |(type, condition)|
+                case type
+                when :where
+                  prev_result = result
+                  result = prev_result.instance_exec(&condition)
+                when :or
+                  result |= prev_result.instance_exec(&condition)
+                end
+              end
+            end
+
+            modifiers.map do |modifier|
+              result.instance_exec(&modifier)
+            end
+
+            Lotus::Utils::Kernel.Array(@collection.deserialize(result))
+          end
+
+          def find(id)
+            @collection.deserialize([symbolize_keys(@dataset.find(id))]).first
           end
 
           private
 
-          # Apply all the conditions and returns a filtered collection.
-          #
-          # This operation is idempotent, but the records are actually fetched
-          # from the memory store.
-          #
-          # @return [Array]
-          #
-          # @api private
-          # @since 0.1.0
-          def run
-            @dataset.all.map { |record| record.each_with_object({}) { |(k,v), h| h[k.to_sym] = v } }
+          def symbolize_keys_in_set(set)
+            set.map { |record| symbolize_keys(record) }
+          end
+
+          def symbolize_keys(record)
+            record.each_with_object({}) { |(k, v), h| h[k.to_sym] = v }
           end
         end
       end

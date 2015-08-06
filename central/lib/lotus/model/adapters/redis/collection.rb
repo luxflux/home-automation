@@ -22,16 +22,8 @@ module Lotus
           # @api private
           # @since 0.1.0
           def all
-            records
-          end
-
-          # @attr_reader records [Hash] a set of records
-          #
-          # @since 0.1.0
-          # @api private
-          def records
             ids = @connection.smembers name
-            ids.map { |id| @connection.hgetall id }
+            ids.map { |id| @connection.hgetall "#{name}:#{id}" }
           end
 
           # Creates a record for the given entity and assigns an id.
@@ -45,47 +37,17 @@ module Lotus
           # @api private
           # @since 0.1.0
           def create(entity)
-            serialized_entity = _serialize(entity)
-
             id = @connection.incr "#{name}:id"
-            serialized_entity[_identity] = id
+            entity[_identity] = id
             identifier = "#{name}:#{id}"
-            @connection.mapped_hmset identifier, serialized_entity
-            @connection.sadd name, identifier
+            @connection.mapped_hmset identifier, entity
+            @connection.sadd name, id
 
-            _deserialize(serialized_entity)
+            entity
           end
 
-          private
-
-          # Serialize the given entity before to persist in the database.
-          #
-          # @return [Hash] the serialized entity
-          #
-          # @api private
-          # @since 0.1.0
-          def _serialize(entity)
-            @mapped_collection.serialize(entity)
-          end
-
-          # Deserialize the given entity after it was persisted in the database.
-          #
-          # @return [Lotus::Entity] the deserialized entity
-          #
-          # @api private
-          # @since 0.2.2
-          def _deserialize(entity)
-            @mapped_collection.deserialize([entity]).first
-          end
-
-          # Name of the identity column in database
-          #
-          # @return [Symbol] the identity name
-          #
-          # @api private
-          # @since 0.2.2
-          def _identity
-            @mapped_collection.identity
+          def find(id)
+            @connection.hgetall("#{name}:#{id}")
           end
         end
       end

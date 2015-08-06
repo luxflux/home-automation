@@ -96,6 +96,11 @@ module Lotus
         def command(collection)
           Redis::Command.new(_collection(collection), _mapped_collection(collection))
         end
+
+        def find(collection, id)
+          identity = _identity(collection)
+          query(collection).find(_id(collection, identity, id))
+        end
       end
     end
   end

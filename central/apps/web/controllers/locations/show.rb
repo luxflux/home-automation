@@ -9,8 +9,8 @@ module Web::Controllers::Locations
     expose :states
 
     def call(params)
-      @location = params[:id]
-      measurements = redis.smembers "locations:#{@location}:measurements"
+      @location = LocationRepository.find(params[:id])
+      measurements = redis.smembers "locations:#{@location.id}:measurements"
       @states = measurements.map do |measurement|
         data = influxdb.query "SELECT mean(value) FROM #{measurement} WHERE time > now() - 1h GROUP BY time(1m)"
         data.map! { |result| result['values'] }
