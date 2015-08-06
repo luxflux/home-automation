@@ -1,6 +1,6 @@
 require 'lotus/model'
 
-class MeasurementRepository
+class ValueRepository
   include Lotus::Repository
 
   def self.all(location_id)

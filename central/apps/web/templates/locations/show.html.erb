@@ -4,10 +4,16 @@
     <th>Kind</th>
     <th>Current Value</th>
   </tr>
-  <% measurements.each do |measurement| %>
+  <% states.each do |state| %>
     <tr>
-      <td><%= measurement.kind %></td>
-      <td><%= measurement.current %></td>
+      <td><%= state.kind %></td>
+      <td><%= state.current %></td>
+    </tr>
+  <% end %>
+  <% values.each do |value| %>
+    <tr>
+      <td><%= value.kind %></td>
+      <td><%= value.current %></td>
     </tr>
   <% end %>
 </ul>

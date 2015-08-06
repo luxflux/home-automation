@@ -6,11 +6,13 @@ module Web::Controllers::Locations
     include Web::Action
 
     expose :location
-    expose :measurements
+    expose :states
+    expose :values
 
     def call(params)
       @location = LocationRepository.find(params[:id])
-      @measurements = MeasurementRepository.all(@location.id)
+      @states = StateRepository.all(@location.id)
+      @values = ValueRepository.all(@location.id)
       # @states = measurements.map do |measurement|
       #   # data = influxdb.query "SELECT mean(value) FROM #{measurement} WHERE time > now() - 1h GROUP BY time(1m)"
       #   # data.map! { |result| result['values'] }

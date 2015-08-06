@@ -1,6 +1,6 @@
 require 'lotus/model'
 
-class Measurement
+class Value
   include Lotus::Entity
 
   attributes :kind, :current, :location_id

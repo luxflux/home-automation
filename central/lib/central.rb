@@ -37,13 +37,23 @@ Lotus::Model.configure do
       attribute :name, String
     end
 
-    collection :measurements do
-      entity Measurement
-      repository MeasurementRepository
+    collection :values do
+      entity Value
+      repository ValueRepository
 
       attribute :id, Integer
       attribute :kind, String
       attribute :current, Float
+      attribute :location_id, Integer
+    end
+
+    collection :states do
+      entity State
+      repository StateRepository
+
+      attribute :id, Integer
+      attribute :kind, String
+      attribute :current, Boolean
       attribute :location_id, Integer
     end
   end
