@@ -9,7 +9,7 @@ set :repo_tree, 'central'
 set :deploy_to, '/srv/autohome'
 
 # Default value for linked_dirs is []
-set :linked_dirs, fetch(:linked_dirs, []).push('log', 'vendor/bundle')
+set :linked_dirs, fetch(:linked_dirs, []).push('log', 'vendor/bundle', 'tmp/sockets')
 
 set :rbenv_type, :system
 set :rbenv_ruby, '2.2.2'
