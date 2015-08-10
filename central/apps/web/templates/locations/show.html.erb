@@ -1,19 +1,41 @@
 <h1>Location <%= location.name %></h1>
 <table>
   <tr>
-    <th>Kind</th>
+    <th>Name</th>
     <th>Current Value</th>
   </tr>
-  <% states.each do |state| %>
+  <% measurements.each do |measurement| %>
     <tr>
-      <td><%= state.kind %></td>
-      <td><%= state.current %></td>
+      <td><%= measurement[:name] %></td>
+      <td><%= measurement[:current] %></td>
     </tr>
-  <% end %>
-  <% values.each do |value| %>
     <tr>
-      <td><%= value.kind %></td>
-      <td><%= value.current %></td>
+      <td colspan="2">
+        <div id="chart-<%= measurement[:name] %>" style="height: 400px; width: 800px"></div>
+        <script>
+
+var data = <%= JSON.dump(measurement[:data]) %>;
+console.log(data);
+
+var chart = new tauCharts.Chart({
+  data: data,
+  type: 'line',
+  x: 'time',
+  y: 'mean',
+  dimensions: {
+    mean: {
+      type: 'measure',
+    },
+    time: {
+      type : 'measure',
+      scale: 'time'
+    }
+  }
+});
+
+chart.renderTo('#chart-<%= measurement[:name] %>')
+        </script>
+      </td>
     </tr>
   <% end %>
 </ul>
