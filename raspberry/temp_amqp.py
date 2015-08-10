@@ -1,36 +1,49 @@
 #!/usr/bin/env python
 
-try:
-    import RPi.GPIO as GPIO
-    import time
-    import Adafruit_DHT
-    import spidev
-    import pika
-    import json
-    import os
+import RPi.GPIO as GPIO
+import time
+import Adafruit_DHT
+import spidev
+import pika
+import json
+import os
+import signal
+import sys
 
-    GPIO.setmode(GPIO.BCM)
-    GPIO.setwarnings(True)
+def signal_handler(signal, frame):
+    print('You pressed Ctrl+C!')
+    GPIO.cleanup()
+    sys.exit(0)
 
-    LIGHT_SENSOR = 0 # analog
-    UV_SENSOR = 1 # analog
-    DUMMY_SENSOR = 2 # analog
-    MOVEMENT_SENSOR = 4
-    TEMPERATURE_SENSOR = 3
-    TEMPERATURE_SENSOR_TYPE = Adafruit_DHT.DHT22
+signal.signal(signal.SIGINT, signal_handler)
 
-    GPIO.setup(MOVEMENT_SENSOR, GPIO.IN)
+# Function to read SPI data from MCP3008 chip
+# Channel must be an integer 0-7
+def ReadChannel(channel):
+    adc = spi.xfer2([1,(8+channel)<<4,0])
+    data = ((adc[1]&3) << 8) + adc[2]
+    return data
 
-    spi = spidev.SpiDev()
-    spi.open(0,0)
+GPIO.setmode(GPIO.BCM)
+GPIO.setwarnings(True)
 
-    # Function to read SPI data from MCP3008 chip
-    # Channel must be an integer 0-7
-    def ReadChannel(channel):
-        adc = spi.xfer2([1,(8+channel)<<4,0])
-        data = ((adc[1]&3) << 8) + adc[2]
-        return data
+LIGHT_SENSOR = 0 # analog
+UV_SENSOR = 1 # analog
+DUMMY_SENSOR = 2 # analog
+MOVEMENT_SENSOR = 4
+TEMPERATURE_SENSOR = 3
+TEMPERATURE_SENSOR_TYPE = Adafruit_DHT.DHT22
 
+GPIO.setup(MOVEMENT_SENSOR, GPIO.IN)
+
+spi = spidev.SpiDev()
+spi.open(0,0)
+
+def main():
+    credentials = pika.PlainCredentials('autohome', os.environ['AMQP_PASSWORD'])
+    parameters = pika.ConnectionParameters('10.0.0.12', 5672, '/', credentials)
+    connection = pika.BlockingConnection(parameters)
+    channel = connection.channel()
     while True:
         light_reading = ReadChannel(LIGHT_SENSOR)
         uv_reading = ReadChannel(UV_SENSOR)
@@ -48,11 +61,6 @@ try:
         print "TEMPERATURE: %f" % temperature
 
         print "======= publish ============"
-        credentials = pika.PlainCredentials('autohome', os.environ['AMQP_PASSWORD'])
-        parameters = pika.ConnectionParameters('10.0.0.12', 5672, '/', credentials)
-        connection = pika.BlockingConnection(parameters)
-        channel = connection.channel()
-
         messages = [
                 { 'location': 'office', 'kind': 'movement', 'state': movement },
 
@@ -69,5 +77,12 @@ try:
 
         time.sleep(1)
 
-finally:
-    GPIO.cleanup()
+
+while True:
+    try:
+        print >> sys.stdout, 'Starting main...'
+        main()
+    except pika.exceptions.ConnectionClosed:
+        print >> sys.stderr, 'Retrying in 1s after ConnectionClosed'
+        time.sleep(1)
+        pass
