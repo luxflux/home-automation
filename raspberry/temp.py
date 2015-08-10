@@ -19,9 +19,7 @@ try:
     GPIO.setup(movement_sensor, GPIO.IN)
 
     spi = spidev.SpiDev()
-    spi.open(0,1)
-    spi.max_speed_hz = 50000
-    # spi.lsbfirst = True
+    spi.open(0,0)
 
     # Function to read SPI data from MCP3008 chip
     # Channel must be an integer 0-7
@@ -31,22 +29,20 @@ try:
         return data
 
     while True:
-        # light_reading = readadc(light_sensor, SPICLK, SPIMOSI, SPIMISO, SPICS)
         light_reading = ReadChannel(light_sensor)
-        # uv_reading = readadc(uv_sensor, SPICLK, SPIMOSI, SPIMISO, SPICS)
-        # dummy_reading = readadc(dummy_sensor, SPICLK, SPIMOSI, SPIMISO, SPICS)
-        # dummy_reading = ReadChannel(dummy_sensor)
+        uv_reading = ReadChannel(uv_sensor)
+        dummy_reading = ReadChannel(dummy_sensor)
 
-        # movement = GPIO.input(movement_sensor)
-        # humidity, temperature = Adafruit_DHT.read_retry(temperature_sensor_type, temperature_sensor_pin)
+        movement = GPIO.input(movement_sensor)
+        humidity, temperature = Adafruit_DHT.read_retry(temperature_sensor_type, temperature_sensor_pin)
 
         print "==================="
         print "LIGHT: %d" % light_reading
-        # print "UV: %d" % uv_reading
-        # print "DUMMY: %d" % dummy_reading
-        # print "MOVEMENT: %d" % movement
-        # print "HUMIDITY: %f" % humidity
-        # print "TEMPERATURE: %f" % temperature
+        print "UV: %d" % uv_reading
+        print "DUMMY: %d" % dummy_reading
+        print "MOVEMENT: %d" % movement
+        print "HUMIDITY: %f" % humidity
+        print "TEMPERATURE: %f" % temperature
 
         time.sleep(1)
 
