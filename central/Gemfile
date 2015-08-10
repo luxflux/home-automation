@@ -13,12 +13,15 @@ gem 'lotus-assets', github: 'lotus/assets'
 
 gem 'foreman'
 
+gem 'puma'
+
+group :development do
+  gem 'capistrano'
+  gem 'capistrano-passenger'
+  gem 'capistrano-rbenv'
+end
+
 group :test do
   gem 'rspec'
   gem 'capybara'
 end
-
-group :production do
-  # gem 'puma'
-end
-
