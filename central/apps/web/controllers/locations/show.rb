@@ -18,7 +18,7 @@ module Web::Controllers::Locations
         data = influxdb.query query
         data.map! { |result| result['values'] }
         data.flatten!
-        @measurements << { kind: measurement.kind, current: measurement.current, data: data }
+        @measurements << { name: measurement.kind, current: measurement.current, data: data }
       end
 
       @states.each do |measurement|
@@ -26,7 +26,7 @@ module Web::Controllers::Locations
         data = influxdb.query query
         data.map! { |result| result['values'] }
         data.flatten!
-        @measurements << { kind: measurement.kind, current: measurement.current, data: data }
+        @measurements << { name: measurement.kind, current: measurement.current, data: data }
       end
     end
 
