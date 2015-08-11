@@ -14,7 +14,7 @@ module Web::Controllers::Locations
       @values = ValueRepository.all(@location.id)
       @measurements = []
       @values.each do |measurement|
-        query = "SELECT mean(value) FROM #{measurement.kind} WHERE time > now() - 1h GROUP BY time(1m)"
+        query = "SELECT mean(value) FROM #{measurement.kind} WHERE time > now() - 12h GROUP BY time(5m)"
         data = influxdb.query query
         data.map! { |result| result['values'] }
         data.flatten!
@@ -22,7 +22,7 @@ module Web::Controllers::Locations
       end
 
       @states.each do |measurement|
-        query = "SELECT mean(state) FROM #{measurement.kind} WHERE time > now() - 1h GROUP BY time(1m)"
+        query = "SELECT mean(state) FROM #{measurement.kind} WHERE time > now() - 12h GROUP BY time(5m)"
         data = influxdb.query query
         data.map! { |result| result['values'] }
         data.flatten!
