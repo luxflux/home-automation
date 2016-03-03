@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 
+import os
 import RPi.GPIO as GPIO
 import time
 import Adafruit_DHT
 import spidev
 import pika
 import json
-import os
 import signal
 import sys
 
@@ -39,9 +39,20 @@ GPIO.setup(MOVEMENT_SENSOR, GPIO.IN)
 spi = spidev.SpiDev()
 spi.open(0,0)
 
+class MissingConfigVariable(Exception):
+    def __init__(self, name):
+        self.name = name
+
+    def __str__(self):
+        return repr("Missing ENV Variable %s" %self.name)
+
+for variable in ['AMQP_PASSWORD', 'AMQP_USER', 'AMQP_HOST', 'LOCATION']:
+    if not os.environ.has_key(variable):
+        raise MissingConfigVariable(variable)
+
 def main():
-    credentials = pika.PlainCredentials('autohome', os.environ['AMQP_PASSWORD'])
-    parameters = pika.ConnectionParameters('10.0.0.12', 5672, '/', credentials)
+    credentials = pika.PlainCredentials(os.environ['AMQP_USER'], os.environ['AMQP_PASSWORD'])
+    parameters = pika.ConnectionParameters(os.environ['AMQP_HOST'], 5672, '/', credentials)
     connection = pika.BlockingConnection(parameters)
     channel = connection.channel()
     while True:
@@ -62,13 +73,13 @@ def main():
 
         print "======= publish ============"
         messages = [
-                { 'location': 'office', 'kind': 'movement', 'state': movement },
+                { 'location': os.environ['LOCATION'], 'kind': 'movement', 'state': movement },
 
-                { 'location': 'office', 'kind': 'light', 'value': light_reading },
-                { 'location': 'office', 'kind': 'uv', 'value': uv_reading },
-                { 'location': 'office', 'kind': 'dummy', 'value': dummy_reading },
-                { 'location': 'office', 'kind': 'humidity', 'value': humidity },
-                { 'location': 'office', 'kind': 'temperature', 'value': temperature },
+                { 'location': os.environ['LOCATION'], 'kind': 'light', 'value': light_reading },
+                { 'location': os.environ['LOCATION'], 'kind': 'uv', 'value': uv_reading },
+                { 'location': os.environ['LOCATION'], 'kind': 'dummy', 'value': dummy_reading },
+                { 'location': os.environ['LOCATION'], 'kind': 'humidity', 'value': humidity },
+                { 'location': os.environ['LOCATION'], 'kind': 'temperature', 'value': temperature },
         ]
 
         for message in messages:
