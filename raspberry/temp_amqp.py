@@ -28,7 +28,8 @@ GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(True)
 
 LIGHT_SENSOR = 0 # analog
-UV_SENSOR = 1 # analog
+# UV_SENSOR = 1 # analog
+UV_SENSOR = 7 # analog
 DUMMY_SENSOR = 2 # analog
 MOVEMENT_SENSOR = 4
 TEMPERATURE_SENSOR = 3
@@ -55,34 +56,53 @@ def main():
     parameters = pika.ConnectionParameters(os.environ['AMQP_HOST'], 5672, '/', credentials)
     connection = pika.BlockingConnection(parameters)
     channel = connection.channel()
-    while True:
-        light_reading = ReadChannel(LIGHT_SENSOR)
-        uv_reading = ReadChannel(UV_SENSOR)
-        dummy_reading = ReadChannel(DUMMY_SENSOR)
 
-        movement = GPIO.input(MOVEMENT_SENSOR) == 1
-        humidity, temperature = Adafruit_DHT.read_retry(TEMPERATURE_SENSOR_TYPE, TEMPERATURE_SENSOR)
+    print >> sys.stdout, 'AMQP connection established'
+    while True:
+        print >> sys.stdout, 'Reading sensors'
+        # light_reading = ReadChannel(LIGHT_SENSOR)
+        uv_reading = ReadChannel(UV_SENSOR)
+        print ReadChannel(0)
+        print ReadChannel(1)
+        print ReadChannel(2)
+        print ReadChannel(3)
+        print ReadChannel(4)
+        print ReadChannel(5)
+        print ReadChannel(6)
+        print ReadChannel(7)
+        print ReadChannel(8)
+        # dummy_reading = ReadChannel(DUMMY_SENSOR)
+
+        # movement = GPIO.input(MOVEMENT_SENSOR) == 1
+        # humidity, temperature = Adafruit_DHT.read_retry(TEMPERATURE_SENSOR_TYPE, TEMPERATURE_SENSOR)
 
         print "======= reading ============"
-        print "LIGHT: %d" % light_reading
-        print "UV: %d" % uv_reading
-        print "DUMMY: %d" % dummy_reading
-        print "MOVEMENT: %d" % movement
-        print "HUMIDITY: %f" % humidity
-        print "TEMPERATURE: %f" % temperature
+        # if light_reading:
+        #     print "LIGHT: %d" % light_reading
+        if uv_reading:
+            print "UV: %d" % uv_reading
+        # if dummy_reading:
+        #     print "DUMMY: %d" % dummy_reading
+        # if movement:
+        #     print "MOVEMENT: %d" % movement
+        # if humidity:
+        #     print "HUMIDITY: %f" % humidity
+        # if temperature:
+        #     print "TEMPERATURE: %f" % temperature
 
         print "======= publish ============"
         messages = [
-                { 'location': os.environ['LOCATION'], 'kind': 'movement', 'state': movement },
+                # { 'location': os.environ['LOCATION'], 'kind': 'movement', 'state': movement },
 
-                { 'location': os.environ['LOCATION'], 'kind': 'light', 'value': light_reading },
+                # { 'location': os.environ['LOCATION'], 'kind': 'light', 'value': light_reading },
                 { 'location': os.environ['LOCATION'], 'kind': 'uv', 'value': uv_reading },
-                { 'location': os.environ['LOCATION'], 'kind': 'dummy', 'value': dummy_reading },
-                { 'location': os.environ['LOCATION'], 'kind': 'humidity', 'value': humidity },
-                { 'location': os.environ['LOCATION'], 'kind': 'temperature', 'value': temperature },
+                # { 'location': os.environ['LOCATION'], 'kind': 'dummy', 'value': dummy_reading },
+                # { 'location': os.environ['LOCATION'], 'kind': 'humidity', 'value': humidity },
+                # { 'location': os.environ['LOCATION'], 'kind': 'temperature', 'value': temperature },
         ]
 
         for message in messages:
+            print message
             channel.basic_publish(exchange='homeauto',
                     routing_key='measurements.office', body=json.dumps(message))
 
