@@ -10,6 +10,7 @@ import json
 import signal
 import sys
 import logging
+import numbers
 
 
 config = [
@@ -19,6 +20,39 @@ config = [
         # { 'type': 'digital', 'port': 2, 'module': 'environment' },
         ]
 
+
+def format_log(hash):
+  outarr = []
+  for k,v in hash.items():
+    if v is None:
+      outarr.append("%s=" % k)
+      continue
+
+    if isinstance(v, bool):
+        v = "true" if v else "false"
+
+    elif isinstance(v, numbers.Number ):
+        pass
+
+    else:
+      if isinstance(v, (dict, object)):
+        v = str(v)
+
+      v = '"%s"' % v.replace('"', '\\' + '"')
+
+    outarr.append("%s=%s" % (k, v))
+
+  return " ".join(outarr)
+
+def info(tag, hash):
+    hash['tag'] = tag
+    hash['level'] = 'info'
+    logging.info(format_log(hash))
+
+def debug(tag, hash):
+    hash['tag'] = tag
+    hash['level'] = 'debug'
+    logging.debug(format_log(hash))
 
 class MissingConfigVariable(Exception):
     def __init__(self, name, element = None):
@@ -58,12 +92,12 @@ class GPIO(object):
         RPi.GPIO.setwarnings(True)
 
         for port, bcm_port in self.BCM_PORT_MAPPING.iteritems():
-            logging.debug("Setting port %s (BCM: %s) to IN" % (port, bcm_port))
+            debug('setup_port', { 'port': port, 'bcm_port': bcm_port })
             RPi.GPIO.setup(bcm_port, RPi.GPIO.IN)
 
     def read(self, port):
         bcm_port = self.BCM_PORT_MAPPING.get(port)
-        logging.debug("Reading BCM %s" % bcm_port)
+        debug('reading_bcm', { 'bcm_port': bcm_port })
         return RPi.GPIO.input(bcm_port)
 
 
@@ -86,9 +120,10 @@ class DigitalPort(object):
         self.gpio = gpio
 
     def read(self):
-        logging.debug("Reading Port %s ..." % self.port)
+        debug('reading_digital_port', { 'port': self.port })
         value = self.gpio.read(self.port)
-        logging.debug("Read %s" % value)
+        debug('reading_digital_port_completed',
+                { 'port': self.port, 'value': value })
         return value
 
 
@@ -115,7 +150,7 @@ class AMQP:
                 'value': value,
                 'timestamp': int(time.time())}
 
-        logging.debug("Sending via AMQP: %s" % message)
+        debug('amqp_publish', message)
         self.channel.basic_publish(
                 exchange=self.exchange,
                 routing_key='measurements.%s'.format(self.location),
@@ -168,11 +203,16 @@ class Moon:
 
     def run(self):
         for port in self.config:
-            logging.debug('Handling %s' % port)
+            debug('start_handling', port)
             klass = self.SWITCHER.get(port['type']).get(port['module'])
             reader = klass(self.spi, self.gpio, port['port'])
 
             value = reader.read()
+            info('reading_complete', {
+                'value': value,
+                'port_type': port['type'],
+                'port': port['port']
+                })
             self.amqp.publish(port['type'], port['port'], value)
 
 
@@ -190,10 +230,14 @@ def main():
         time.sleep(1)
 
 def signal_handler(signal, frame):
-    logging.info('You pressed Ctrl+C!')
-    GPIO.cleanup()
+    info('got_ctrlc', {})
+    RPi.GPIO.cleanup()
     sys.exit(0)
 
+signal.signal(signal.SIGINT, signal_handler)
 numeric_level = getattr(logging, os.environ.get('LOG_LEVEL', 'INFO').upper(), None)
-logging.basicConfig(level=numeric_level)
+logging.basicConfig(
+        level=numeric_level,
+        format='%(asctime)s %(message)s',
+        datefmt='%Y-%m-%dT%H:%M:%S')
 main()
