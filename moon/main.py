@@ -17,8 +17,8 @@ import time
 
 config = [
         # { 'type': 'analog', 'port': 1, 'module': 'light' },
-        { 'type': 'analog', 'port': 5, 'module': 'uv' },
-        { 'type': 'digital', 'port': 1, 'module': 'movement' },
+        { 'type': 'analog', 'port': 2, 'module': 'uv' },
+        { 'type': 'digital', 'port': 2, 'module': 'movement' },
         # { 'type': 'digital', 'port': 2, 'module': 'environment' },
         ]
 
@@ -118,6 +118,7 @@ class GPIO(object):
                 'used_for': 'write'
                 })
             RPi.GPIO.setup(bcm_port, RPi.GPIO.OUT)
+            self.off(port)
 
     def read(self, port):
         bcm_port = self.BCM_READ_PORT_MAPPING.get(port)
@@ -127,12 +128,12 @@ class GPIO(object):
     def off(self, port):
         bcm_port = self.BCM_WRITE_PORT_MAPPING.get(port)
         debug('set_off', { 'bcm_port': bcm_port })
-        RPi.GPIO.output(bcm_port, 0)
+        RPi.GPIO.output(bcm_port, 1)
 
     def on(self, port):
         bcm_port = self.BCM_WRITE_PORT_MAPPING.get(port)
         debug('set_on', { 'bcm_port': bcm_port })
-        RPi.GPIO.output(bcm_port, 1)
+        RPi.GPIO.output(bcm_port, 0)
 
 
 class AnalogPort(object):
